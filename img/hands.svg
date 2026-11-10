@@ -1,0 +1,32 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1600 1067" width="1600" height="1067">
+  <defs>
+    <radialGradient id="bg" cx=".5" cy=".42" r=".75">
+      <stop offset="0" stop-color="#e8b07a"/><stop offset=".45" stop-color="#a9673f"/><stop offset="1" stop-color="#2b1a12"/>
+    </radialGradient>
+    <linearGradient id="skin1" x1="0" y1="0" x2="1" y2="1">
+      <stop offset="0" stop-color="#f0c39a"/><stop offset="1" stop-color="#a9694a"/>
+    </linearGradient>
+    <linearGradient id="skin2" x1="1" y1="0" x2="0" y2="1">
+      <stop offset="0" stop-color="#e3ae86"/><stop offset="1" stop-color="#8d5338"/>
+    </linearGradient>
+  </defs>
+  <rect width="1600" height="1067" fill="url(#bg)"/>
+  <g opacity=".35" fill="#ffd9a8">
+    <circle cx="1180" cy="240" r="120"/><circle cx="1250" cy="300" r="60"/>
+  </g>
+  <g transform="translate(800 560)">
+    <path d="M-520 220 c60-120 160-190 300-200 l60 6 c-120 60 -220 150 -270 254 z" fill="url(#skin1)"/>
+    <path d="M-230 60 c90-60 210-60 300 0 l0 90 c-90-40 -210-40 -300 0 z" fill="url(#skin2)" opacity=".9"/>
+    <path d="M-190 80 c60-36 140-36 200 0" stroke="#6d3f2a" stroke-width="5" fill="none" opacity=".45"/>
+    <path d="M-170 130 c56-30 130-30 180 2" stroke="#6d3f2a" stroke-width="4" fill="none" opacity=".4"/>
+    <path d="M-120 176 c50-24 110-24 150 0" stroke="#6d3f2a" stroke-width="4" fill="none" opacity=".35"/>
+    <path d="M70 40 c50-70 140-110 220-96 60 12 96 54 90 108 -6 66 -70 112 -150 116 -84 4 -150 -40 -160 -128 z" fill="url(#skin2)"/>
+    <path d="M300 130 c60 20 100 70 110 140 l-120 10 c-10-56 -40-100 -80-124 z" fill="url(#skin1)" opacity=".95"/>
+    <g fill="#f6dcc2" opacity=".5">
+      <ellipse cx="-300" cy="150" rx="26" ry="10" transform="rotate(-24 -300 150)"/>
+      <ellipse cx="150" cy="120" rx="24" ry="9" transform="rotate(18 150 120)"/>
+    </g>
+  </g>
+  <rect width="1600" height="1067" fill="#3a1c0c" opacity=".18"/>
+  <rect width="1600" height="1067" fill="none" stroke="#000" stroke-width="80" opacity=".28"/>
+</svg>

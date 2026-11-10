@@ -1,0 +1,41 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1600 1067" width="1600" height="1067">
+  <defs>
+    <linearGradient id="night" x1="0" y1="0" x2="0" y2="1">
+      <stop offset="0" stop-color="#0a1020"/><stop offset=".55" stop-color="#111a2c"/><stop offset="1" stop-color="#060a12"/>
+    </linearGradient>
+    <radialGradient id="lamp" cx=".5" cy=".5" r=".5">
+      <stop offset="0" stop-color="#ffd7a0" stop-opacity=".85"/><stop offset="1" stop-color="#ffb070" stop-opacity="0"/>
+    </radialGradient>
+    <linearGradient id="refl" x1="0" y1="0" x2="1" y2="1">
+      <stop offset="0" stop-color="#ffd0a0" stop-opacity=".22"/><stop offset="1" stop-color="#ffd0a0" stop-opacity="0"/>
+    </linearGradient>
+  </defs>
+  <rect width="1600" height="1067" fill="url(#night)"/>
+  <g opacity=".9">
+    <circle cx="300" cy="620" r="150" fill="url(#lamp)"/><circle cx="520" cy="700" r="90" fill="url(#lamp)"/>
+    <circle cx="1240" cy="560" r="180" fill="url(#lamp)"/>
+    <g fill="#ffcf94">
+      <circle cx="286" cy="612" r="7" opacity=".9"/><circle cx="352" cy="676" r="5" opacity=".7"/>
+      <circle cx="500" cy="700" r="6" opacity=".8"/><circle cx="560" cy="742" r="4" opacity=".6"/>
+      <circle cx="1226" cy="540" r="8" opacity=".9"/><circle cx="1300" cy="600" r="5" opacity=".7"/>
+      <circle cx="1196" cy="640" r="4" opacity=".5"/>
+    </g>
+  </g>
+  <g fill="#7f9bc0" opacity=".18">
+    <rect x="0" y="470" width="1600" height="120"/><rect x="0" y="640" width="1600" height="60"/>
+  </g>
+  <path d="M0 860 C 320 820 700 900 1000 860 C 1260 826 1420 870 1600 850 L1600 1067 L0 1067 Z" fill="#05070c"/>
+  <g>
+    <path d="M1130 340 c70-10 120 40 118 108 -2 62 -50 108 -118 108 -70 0 -112 -46 -112 -108 0 -66 44 -104 112 -108 z" fill="#0a0d14"/>
+    <path d="M1020 560 c20-26 66-40 118-40 54 0 100 14 120 40 l0 120 -238 0 z" fill="#0a0d14"/>
+    <path d="M1160 620 c4 46 8 90 4 130" stroke="#ffd0a0" stroke-width="3" fill="none" opacity=".25"/>
+  </g>
+  <g opacity=".5">
+    <path d="M420 780 c60-24 140-24 200 0 -50 40 -150 40 -200 0 z" fill="#111a28"/>
+    <path d="M420 780 c60-24 140-24 200 0 -50 40 -150 40 -200 0 z" fill="none" stroke="#7ba0c8" stroke-width="2" opacity=".35"/>
+  </g>
+  <rect width="1600" height="1067" fill="url(#refl)" opacity=".5"/>
+  <g stroke="#a8c4de" stroke-width="1.5" opacity=".12">
+    <path d="M0 300 L1600 260"/><path d="M0 980 L1600 940"/>
+  </g>
+</svg>

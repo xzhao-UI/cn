@@ -1,0 +1,13 @@
+# 系统/编辑器垃圾
+.DS_Store
+Thumbs.db
+desktop.ini
+
+# 发布/应用缓存
+*.genie
+.wbapp_*
+.workbuddy/
+
+# 草稿与临时文件
+*.log
+tmp/

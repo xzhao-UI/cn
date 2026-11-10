@@ -1,0 +1,46 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1600 1067" width="1600" height="1067">
+  <defs>
+    <linearGradient id="sheet" x1="0" y1="0" x2=".7" y2="1">
+      <stop offset="0" stop-color="#f2e6d2"/><stop offset=".55" stop-color="#d9c7ac"/><stop offset="1" stop-color="#a68f74"/>
+    </linearGradient>
+    <radialGradient id="warm" cx=".8" cy=".12" r=".8">
+      <stop offset="0" stop-color="#ffcf94" stop-opacity=".55"/><stop offset="1" stop-color="#ffb070" stop-opacity="0"/>
+    </radialGradient>
+  </defs>
+  <rect width="1600" height="1067" fill="#2a2018"/>
+  <path d="M-40 200 C 300 120 900 140 1240 210 C 1420 250 1560 320 1660 420 L1660 1120 L-40 1120 Z" fill="url(#sheet)"/>
+  <g stroke="#a68f74" stroke-width="6" fill="none" opacity=".5">
+    <path d="M120 560 C 420 520 700 600 980 560"/><path d="M240 760 C 560 700 900 780 1200 720"/>
+    <path d="M60 940 C 380 880 760 960 1120 900"/>
+  </g>
+  <rect width="1600" height="1067" fill="url(#warm)"/>
+  <g>
+    <g transform="rotate(-9 520 520)">
+      <rect x="380" y="380" width="300" height="290" fill="#f7f0e2"/>
+      <rect x="396" y="396" width="268" height="216" fill="#c8a887"/>
+      <rect x="396" y="396" width="268" height="216" fill="#000" opacity=".18"/>
+      <rect x="380" y="380" width="300" height="290" fill="none" stroke="#b9a184" stroke-width="1"/>
+    </g>
+    <g transform="rotate(7 900 470)">
+      <rect x="760" y="330" width="330" height="290" fill="#f7f0e2"/>
+      <rect x="776" y="346" width="298" height="216" fill="#7d6a55"/>
+      <rect x="776" y="346" width="298" height="216" fill="#000" opacity=".22"/>
+    </g>
+    <g transform="rotate(-3 620 800)">
+      <rect x="450" y="690" width="360" height="250" fill="#f7f0e2"/>
+      <rect x="466" y="706" width="328" height="176" fill="#5a4a3a"/>
+      <rect x="466" y="706" width="328" height="176" fill="#000" opacity=".25"/>
+    </g>
+    <g transform="rotate(14 1150 780)">
+      <rect x="1010" y="690" width="280" height="270" fill="#f7f0e2"/>
+      <rect x="1026" y="706" width="248" height="196" fill="#b09173"/>
+      <rect x="1026" y="706" width="248" height="196" fill="#000" opacity=".2"/>
+    </g>
+  </g>
+  <g fill="#b0281e" opacity=".75" font-family="Georgia,serif" font-size="20">
+    <text x="404" y="650" transform="rotate(-9 520 520)">9.19</text>
+    <text x="784" y="602" transform="rotate(7 900 470)">10.7</text>
+  </g>
+  <ellipse cx="1320" cy="200" rx="360" ry="280" fill="url(#warm)"/>
+  <path d="M1240 60 l60 180 h-130 z" fill="#ffe0b0" opacity=".35"/>
+</svg>

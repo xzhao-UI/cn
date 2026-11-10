@@ -1,0 +1,94 @@
+<!doctype html><meta charset="utf-8"><body style="margin:0;background:#111">
+<script>
+// 现做两张纸/木头的底纹：不搬原站素材，用可平铺的噪声自己生成
+// 1) 木桌 560×560 平铺   2) 牛皮纸 1714×1023（和原站同一张贴图尺寸，撕口的 background-position 才对得上）
+
+function rng(seed){ let s = seed; return () => (s = (s * 16807) % 2147483647) / 2147483647; }
+
+// 可平铺的平滑噪声：整数频率的正弦叠加，绕回来正好接上
+function makeNoise(seed, octaves, minF, maxF){
+  const R = rng(seed), waves = [];
+  for (let i = 0; i < octaves; i++){
+    const f = minF * Math.pow(maxF / minF, i / Math.max(1, octaves - 1));
+    waves.push({ fx: Math.round(f * (0.6 + R() * 1.2)), fy: Math.round(f * (0.3 + R() * 0.9)),
+                 a: 1 / Math.pow(1.7, i), p: R() * 6.283 });
+  }
+  const sum = waves.reduce((s, w) => s + w.a, 0);
+  return (x, y, W, H) => {
+    let v = 0;
+    for (const w of waves) v += w.a * Math.sin(6.2832 * (w.fx * x / W + w.fy * y / H) + w.p);
+    return v / sum;
+  };
+}
+
+function canvas(w, h){ const c = document.createElement('canvas'); c.width = w; c.height = h; return c; }
+
+// ---------- 木桌 ----------
+function wood(){
+  const W = 560, H = 560, c = canvas(W, H), x = c.getContext('2d');
+  // 只有很低的频率才能出直纹：横着走的年轮，慢慢起伏
+  const wob = makeNoise(3, 3, 1, 3), slow = makeNoise(19, 2, 1, 2);
+  const img = x.createImageData(W, H), d = img.data;
+  for (let y = 0; y < H; y++) for (let X = 0; X < W; X++){
+    const w1 = wob(X, y, W, H), w2 = slow(X, y, W, H);
+    // 年轮：主要随 y 变化，x 方向上被低频噪声轻轻推着走（拉长的直纹）
+    const t = y * 0.055 + w1 * 0.85 + w2 * 0.5;
+    const ring = Math.sin(t) * 0.5 + 0.5;
+    // 木纤维：沿 x 拉长的一点点丝光
+    const fiber = Math.sin(X * 0.7 + w1 * 6) * 1.0 + (Math.random() - 0.5) * 5;
+    const base = 108 + ring * 16 + ring * ring * 8 + w2 * 4 + fiber;
+    const o = (y * W + X) * 4;
+    const S = 1.22;   // 对齐原站 wood.jpg 的数（实测过桌面亮度）
+    d[o]     = Math.max(0, Math.min(255, base * 1.18 * S));   // 偏红棕
+    d[o + 1] = Math.max(0, Math.min(255, base * 0.92 * S));
+    d[o + 2] = Math.max(0, Math.min(255, base * 0.66 * S));
+    d[o + 3] = 255;
+  }
+  x.putImageData(img, 0, 0);
+  // 几道深色的木纹裂缝
+  const R = rng(77);
+  x.globalAlpha = 0.13; x.strokeStyle = '#3a1c0a';
+  for (let i = 0; i < 26; i++){
+    x.lineWidth = 0.6 + R() * 1.6;
+    const y0 = R() * H;
+    x.beginPath();
+    for (let t = 0; t <= W; t += 20) x.lineTo(t, y0 + Math.sin(t * 0.012 + i) * 10 + (R() - 0.5) * 3);
+    x.stroke();
+  }
+  x.globalAlpha = 1;
+  // 最后整体轻微虚一下：纸笔画的细线太利，木纹该是糊的
+  const c2 = canvas(W, H), x2 = c2.getContext('2d');
+  x2.filter = 'blur(0.7px)'; x2.drawImage(c, 0, 0); x2.filter = 'none';
+  return c2.toDataURL('image/jpeg', 0.9);
+}
+
+// ---------- 牛皮纸 ----------
+function kraft(){
+  const W = 1714, H = 1023, c = canvas(W, H), x = c.getContext('2d');
+  const n1 = makeNoise(5, 6, 2, 18), n2 = makeNoise(23, 4, 20, 90), n3 = makeNoise(41, 3, 1, 5);
+  const img = x.createImageData(W, H), d = img.data;
+  for (let y = 0; y < H; y++) for (let X = 0; X < W; X++){
+    // 大块深浅 + 细纤维：纤维在 x 方向拉长，像纸浆的走向
+    const blot = n1(X, y, W, H) * 20 + n3(X, y, W, H) * 14;
+    const fib = n2(X, y * 6, W, H) * 9 + (Math.random() - 0.5) * 15;
+    const flute = Math.sin(y * 0.62 + n3(X, y, W, H) * 2) * 1.6;  // 极淡的横向瓦楞
+    const base = (196 + blot + fib + flute) * 0.565;
+    const o = (y * W + X) * 4;
+    d[o]     = Math.max(0, Math.min(255, base * 1.02));
+    d[o + 1] = Math.max(0, Math.min(255, base * 0.885));
+    d[o + 2] = Math.max(0, Math.min(255, base * 0.665));
+    d[o + 3] = 255;
+  }
+  x.putImageData(img, 0, 0);
+  // 零星的小黑点（纸里的杂质）
+  const R = rng(91);
+  for (let i = 0; i < 2600; i++){
+    x.fillStyle = 'rgba(90,60,32,' + (0.1 + R() * 0.3).toFixed(2) + ')';
+    x.beginPath(); x.arc(R() * W, R() * H, 0.4 + R() * 1.1, 0, 6.283); x.fill();
+  }
+  return c.toDataURL('image/jpeg', 0.92);
+}
+
+window.__TEX = { wood: wood(), kraft: kraft() };
+document.title = 'done';
+</script></body>

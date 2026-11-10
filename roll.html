@@ -1,0 +1,269 @@
+<!doctype html>
+<html lang="en"><head><meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>A Roll For Two</title>
+<!-- 片头要用的字先拿，每一幕再用就是现成的 -->
+<link rel="preload" href="font/ReenieBeanie-normal.woff2" as="font" type="font/woff2" crossorigin>
+<link rel="preload" href="font/Fraunces-normal.woff2" as="font" type="font/woff2" crossorigin>
+<link rel="preload" href="font/Fraunces-italic.woff2" as="font" type="font/woff2" crossorigin>
+<link rel="preload" href="font/jbmono.woff2" as="font" type="font/woff2" crossorigin>
+<style>
+html,body{margin:0;height:100%;background:#040302;overflow:hidden}
+/* 每一幕一个 iframe，叠在一起；只有当前这幕看得见、能点 */
+iframe{position:fixed;inset:0;width:100%;height:100%;border:0;background:#040302;opacity:0;pointer-events:none;will-change:opacity,transform}
+iframe.on{opacity:1;pointer-events:auto}
+/* 转场用的一块幕：白闪、黑场 */
+.veil{position:fixed;inset:0;z-index:10;pointer-events:none;opacity:0;background:#040302}
+/* 黑着等下一幕装好：等久了，中间亮一行小字，免得以为坏了 */
+.veil::after{content:'loading the next reel';position:absolute;left:50%;top:50%;transform:translate(-50%,-50%);font:400 11px 'JB Mono',monospace;letter-spacing:.3em;text-transform:uppercase;color:rgba(243,230,210,.45);opacity:0;transition:opacity 1.2s}
+.veil.wait::after{opacity:1;animation:reel 1.6s ease-in-out infinite}
+@keyframes reel{50%{color:rgba(243,230,210,.2)}}
+.veil.white{background:#fff6e4}
+/* 设置：右上角一个相机光圈。靠过去叶片张开一点，点一下张开，菜单从它底下垂下来 */
+.set{position:fixed;right:18px;top:14px;z-index:20;font:400 10px/1 'JB Mono',monospace;letter-spacing:.12em;text-transform:uppercase;color:#f3e6d2;user-select:none}
+.ap{display:flex;align-items:center;gap:9px;margin-left:auto;height:30px;padding:0;border:0;background:none;cursor:pointer;opacity:.5;transition:opacity .4s;color:inherit;font:inherit;letter-spacing:inherit;text-transform:inherit}
+/* 光圈左边写一个 settings，不然有人不知道那是设置 */
+.ap .apl{font-size:10px}
+.ap:hover,.set.open .ap{opacity:1}
+.ap svg{display:block;width:30px;height:30px;flex:none;overflow:visible}
+.ap .b{fill:#cdbda4;stroke:#2e251d;stroke-width:.7;transform:rotate(-10deg) translateY(2.6px);transition:transform .55s cubic-bezier(.4,0,.2,1)}
+.ap:hover .b{transform:rotate(-5deg) translateY(4.2px)}
+.set.open .ap .b{transform:rotate(0deg) translateY(6.8px)}
+.ap .hole{fill:#120d09}.ap .rim{fill:none;stroke:#e9dcc6;stroke-width:1.3}
+.ap .glint{fill:none;stroke:rgba(255,236,206,.5);stroke-width:.8;stroke-linecap:round}
+.menu{position:absolute;right:0;top:40px;min-width:236px;padding:14px 16px 12px;border-radius:10px;background:rgba(16,12,9,.86);border:1px solid rgba(243,230,210,.13);
+  box-shadow:0 10px 30px rgba(0,0,0,.45);-webkit-backdrop-filter:blur(8px);backdrop-filter:blur(8px);
+  opacity:0;visibility:hidden;transform:translateY(-8px) scale(.97);transform-origin:top right;transition:opacity .3s,transform .35s cubic-bezier(.3,.7,.3,1),visibility 0s .35s}
+.set.open .menu{opacity:1;visibility:visible;transform:none;transition:opacity .3s,transform .35s cubic-bezier(.3,.7,.3,1),visibility 0s}
+.menu .row{display:flex;align-items:center;justify-content:space-between;gap:14px;padding:6px 0}
+.menu .row+.row{border-top:1px solid rgba(243,230,210,.07)}
+.menu .k{opacity:.45}
+.menu .row[hidden]{display:none}
+.menu b{font-weight:400;cursor:pointer}.menu b.off{opacity:.5}
+.menu .tr{justify-content:center;gap:10px}.menu .tr i{font-style:normal;cursor:pointer;padding:2px 4px;opacity:.7}.menu .tr i:hover{opacity:1}
+.menu .tr span{max-width:180px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;text-transform:none;letter-spacing:.03em;font-size:11px;opacity:.85}
+.menu input[type=range]{-webkit-appearance:none;appearance:none;width:120px;height:14px;background:none;cursor:pointer;margin:0}
+.menu input[type=range]::-webkit-slider-runnable-track{height:2px;background:linear-gradient(90deg,#f3e6d2 var(--v,70%),rgba(243,230,210,.2) var(--v,70%))}
+.menu input[type=range]::-webkit-slider-thumb{-webkit-appearance:none;width:10px;height:10px;margin-top:-4px;border-radius:50%;background:#f3e6d2;box-shadow:0 0 0 3px rgba(243,230,210,.12)}
+.menu input[type=range]::-moz-range-track{height:2px;background:rgba(243,230,210,.2)}.menu input[type=range]::-moz-range-progress{height:2px;background:#f3e6d2}
+.menu input[type=range]::-moz-range-thumb{width:10px;height:10px;border:0;border-radius:50%;background:#f3e6d2}
+.opt{display:flex;gap:10px}.opt u{text-decoration:none;cursor:pointer;opacity:.4;padding-bottom:2px;border-bottom:1px solid transparent}
+.opt u:hover{opacity:.75}.opt u.sel{opacity:1;border-bottom-color:currentColor}.opt u.dis{cursor:not-allowed;opacity:.22}
+/* 场景切换：‹ 这一幕的名字 ›，一步一幕来回走 */
+.sn{display:flex;align-items:center;gap:6px;min-width:0}
+.sn i{font-style:normal;cursor:pointer;padding:2px 4px;flex:none;font-size:12px;line-height:1;opacity:.7}
+.sn i:hover{opacity:1}
+.sn i.dis{opacity:.26;cursor:default}
+.sn span{max-width:140px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;text-transform:none;letter-spacing:.03em;font-size:11px;opacity:.85}
+/* 左下角一行小字：正在放哪首。点一下静音/再点放回来 */
+.np{display:none;position:fixed;left:22px;bottom:16px;z-index:20;font:400 10px/1.5 'JB Mono',monospace;letter-spacing:.1em;text-transform:uppercase;color:#f3e6d2;opacity:0;transition:opacity 1.5s;cursor:pointer;user-select:none}
+.np.on{opacity:.38}.np.on:hover{opacity:.75}
+.np i{font-style:normal;display:inline-block;width:12px}
+.np.muted{text-decoration:line-through}
+</style></head>
+<body>
+<div class="veil" id="veil"></div>
+<audio id="music" preload="auto"></audio>
+<div class="set" id="set">
+  <button class="ap" id="ap" aria-label="settings"><span class="apl">settings</span><svg viewBox="-12 -12 24 24"><defs><clipPath id="apc"><circle r="10.2"/></clipPath></defs>
+    <circle r="10.2" class="hole"/>
+    <g clip-path="url(#apc)"><g transform="rotate(0)"><path class="b" d="M-17 0 L5 0 L5 17 L-17 17 Z"/></g><g transform="rotate(60)"><path class="b" d="M-17 0 L5 0 L5 17 L-17 17 Z"/></g><g transform="rotate(120)"><path class="b" d="M-17 0 L5 0 L5 17 L-17 17 Z"/></g><g transform="rotate(180)"><path class="b" d="M-17 0 L5 0 L5 17 L-17 17 Z"/></g><g transform="rotate(240)"><path class="b" d="M-17 0 L5 0 L5 17 L-17 17 Z"/></g><g transform="rotate(300)"><path class="b" d="M-17 0 L5 0 L5 17 L-17 17 Z"/></g></g>
+    <circle r="10.6" class="rim"/><path class="glint" d="M-7.2 -5.6 A9 9 0 0 1 -2.5 -8.7"/></svg></button>
+  <div class="menu" id="menu">
+    <div class="row"><span class="k">scene</span><span class="sn"><i id="sPrev">‹</i><span id="sT">—</span><i id="sNext">›</i></span></div>
+    <div class="row"><span class="k">music</span><b id="mOn">on</b></div>
+    <div class="row"><span class="k">volume</span><input type="range" id="vol" min="0" max="100" step="1"></div>
+    <div class="row"><span class="k">sound</span><input type="range" id="sfx" min="0" max="100" step="1"></div>
+    <div class="row tr"><i id="mPrev">‹</i><span id="mT">—</span><i id="mNext">›</i></div>
+    <div class="row"><span class="k">clarity</span><span class="opt" id="qOpt"><u data-q="smooth">smooth</u><u data-q="standard">standard</u><u data-q="sharp">sharp</u></span></div>
+    <div class="row"><span class="k">light</span><span class="opt" id="gOpt"><u data-g="full">full</u><u data-g="simple">simple</u></span></div>
+    <div class="row" hidden><span class="k">polaroids</span><b id="polaGo">take them home</b></div>
+    <div class="row"><span class="k">language</span><span class="opt" id="lOpt"><u data-l="en">EN</u><u data-l="zh">中文</u></span></div>
+  </div>
+</div>
+<div class="np" id="np"><i>♪</i><span id="npT"></span></div>
+<style>@font-face{font-family:'JB Mono';src:url(font/jbmono.woff2) format('woff2')}</style>
+<script>window.FILM_V='r2a';</script>
+<script src="zh.js"></script>
+<script src="content.js"></script>
+<script src="roll-link.js"></script>
+<script>
+// 整卷的顺序：片头 → 暗房收音机 → 冲印袋 → 四卷。后面的显影盘、连环画、书、片尾还没做，做完了往这里加
+const SCENES=['opening.html','frame-c.html','frame-e.html','rolls.html?enter=bag'];
+// 3D 大场景不提前加载：提前加载会在后台抢资源（上一幕打字、翻信时卡）。等上一幕喊 prep 或者真要切过去时再加载
+const HEAVY=new Set([3]);
+// 这一幕 iframe 的 load 到了画面还是黑的（three.js 还在装），等它自己喊 ready 才算装好；喊不出来的话最多等 25 秒
+const SAYS_READY=new Set([3]);
+// 整卷的歌：从收音机主持人说完开始，一直放到结尾。挑一首或者排几首，按顺序接着放，列表循环
+const MUSIC=[
+  {src:'music/satie.mp3',title:'Gymnopédie No.1 · Erik Satie'},
+  {src:'music/liebestraum.mp3',title:'Liebestraum No.3 · Franz Liszt'},
+  {src:'music/sweetheart.mp3',title:'Let Me Call You Sweetheart · Lewis James, 1924'},
+  {src:'music/comfort.mp3',title:'Comfort · imaboo'},
+];
+const q=new URLSearchParams(location.search),BOOT=window.FILM_V||Date.now().toString(36);
+let cur=+q.get('s')||0,now=null,next=null,busy=false;
+const veil=document.getElementById('veil'),music=document.getElementById('music');
+function load(i){if(i>=SCENES.length)return null;const f=document.createElement('iframe');f.src=SCENES[i]+(SCENES[i].includes('?')?'&':'?')+'b='+BOOT;f.dataset.i=i;f.allow='autoplay';document.body.insertBefore(f,veil);
+  const ok=()=>{if(!f.dataset.ready){f.dataset.ready=1;f.dispatchEvent(new Event('ready'))}};
+  if(SAYS_READY.has(i)){f.addEventListener('load',()=>setTimeout(ok,25000),{once:true});f.sayReady=ok}else f.addEventListener('load',ok,{once:true});return f}
+function show(f){f.classList.add('on');f.style.transition='';f.style.opacity='';f.style.transform='';markScene(+f.dataset.i);const go=()=>f.contentWindow.postMessage({roll:'go'},'*');
+  // 还没加载完就等它加载完再喊开始
+  if(f.dataset.ready)go();else f.addEventListener('ready',go,{once:true})}
+function boot(){if(cur===0)try{['aroll.dev','aroll.marks'].forEach(k=>sessionStorage.removeItem(k))}catch(e){}
+  now=load(cur);show(now);preload();warm(cur)}
+function preload(force){next=null;if(cur+1>=SCENES.length||(HEAVY.has(cur+1)&&!force))return;next=load(cur+1)}
+const loaded=f=>f.dataset.ready?wait(0):new Promise(r=>f.addEventListener('ready',r,{once:true}));
+const wait=ms=>new Promise(r=>setTimeout(r,ms));
+const tween=(el,css,ms,ease='ease')=>new Promise(r=>{el.style.transition=Object.keys(css).map(k=>`${k.replace(/[A-Z]/g,m=>'-'+m.toLowerCase())} ${ms}ms ${ease}`).join(',');setTimeout(()=>{Object.assign(el.style,css);setTimeout(r,ms)},30)});
+// ---- 转场：上一幕自己演完它那一段（灯灭、袋子倒、收音机摇走……），喊 done 的时候带一个 fx，这边负责最后接过去 ----
+const FX={
+  // 光圈：老电影收尾那样，四周的黑往里收成一个小亮圆，亮圆抖两下合上；换幕，再从中间张开
+  async iris(a,b){const ir=document.createElement('div');ir.style.cssText='position:fixed;inset:0;z-index:9;pointer-events:none;background:#040302';document.body.appendChild(ir);
+    const D=Math.hypot(innerWidth,innerHeight)/2+40;
+    const set=r=>{r=Math.max(0,r);const m=`radial-gradient(circle at 50% 50%,transparent ${r}px,#000 ${r+Math.max(2,r*.06)}px)`;ir.style.webkitMaskImage=ir.style.maskImage=m};
+    const run=(from,to,ms,ease)=>new Promise(done=>{const t0=performance.now();(function step(){const u=Math.min(1,(performance.now()-t0)/ms);set(from+(to-from)*ease(u));u<1?setTimeout(step,16):done()})()});
+    const io=u=>u<.5?4*u*u*u:1-Math.pow(-2*u+2,3)/2,out=u=>1-Math.pow(1-u,3);
+    set(D);await wait(30);await run(D,34,1600,io);
+    // 小亮圆停一下，像灯丝抖了两抖
+    for(const r of [30,36,31,35,33]){set(r);await wait(90)}
+    await run(33,0,280,u=>u*u);a.classList.remove('on');show(b);await wait(420);
+    await run(0,D,1800,out);ir.remove()},
+  // 白闪：白一下再暗下来变成下一幕
+  async white(a,b){veil.className='veil white';await tween(veil,{opacity:1},260,'ease-in');a.classList.remove('on');show(b);await wait(120);await tween(veil,{opacity:0},1100,'ease-out')},
+  // 黑场：暗下去，停一拍，再亮
+  async black(a,b){veil.className='veil';await tween(veil,{opacity:1},700,'ease-in');a.classList.remove('on');show(b);await wait(350);await tween(veil,{opacity:0},900,'ease-out')},
+  // 镜头往下摇：上一幕往上走出画面，下一幕从下面接上来
+  async pan(a,b){b.style.transform='translateY(100%)';show(b);b.style.transform='translateY(100%)';
+    await wait(30);
+    const e='cubic-bezier(.6,0,.25,1)';tween(a,{transform:'translateY(-100%)'},1600,e);await tween(b,{transform:'translateY(0%)'},1600,e);a.classList.remove('on')},
+  // 叠化
+  async cross(a,b){b.style.opacity=0;show(b);b.style.opacity=0;await wait(30);await tween(b,{opacity:1},1300);a.classList.remove('on')},
+  // 推进去：上一幕放大着淡掉，下一幕从略大收回原样
+  async zoom(a,b){b.style.opacity=0;b.style.transform='scale(1.08)';show(b);b.style.opacity=0;b.style.transform='scale(1.08)';await wait(30);
+    tween(a,{transform:'scale(1.6)',opacity:0},1200,'cubic-bezier(.5,0,.8,.4)');await wait(500);await tween(b,{opacity:1,transform:'scale(1)'},1200,'ease-out');a.classList.remove('on')}
+};
+// ---- 闲时先下：前面几幕放着、网空着的时候，把四卷那一幕要的文件悄悄下进浏览器缓存（只下载、不装 iframe）----
+const WARM=[{at:0,to:3,list:()=>['lib/three.iife.js','img/table.jpg',
+  'img/beach.svg','img/bed.svg','img/city.svg','img/hands.svg','img/train.svg','img/window.svg',
+  ...Array.from({length:8},(_,i)=>`img/u/${['11c5f62a6917dede','07da367b2b878de9','6e98a66b611088f4','18d2c426cd90acfa','eb9a238883298587','a39e74ebe70f7838','f94762b81f544911','8b67199989d9fc73'][i]}-t.webp`)]}];
+const warmQ=[],warmSeen=new Set();let warmRun=0;
+function warmNext(){while(warmRun<3&&warmQ.length){const u=warmQ.shift();warmRun++;
+  fetch(u,{priority:'low'}).then(r=>r.ok?r.blob():null).catch(()=>{}).finally(()=>{warmRun--;warmNext()})}}
+// 这一幕亮了三秒以后，把对得上的都排进去（从中间某幕开始放也一样）
+function warm(i){setTimeout(()=>{for(const w of WARM){if(w.done||i<w.at||i>=w.to)continue;w.done=true;
+  try{for(const u of w.list())if(u&&!warmSeen.has(u)){warmSeen.add(u);warmQ.push(u)}}catch(e){}}warmNext()},3000)}
+async function advance(fx){if(busy||cur+1>=SCENES.length)return;busy=true;
+  // 大场景还没加载好：先黑下去，黑着把它装好（three.js 起来要一会儿），再亮
+  if(!next||!next.dataset.ready){veil.className='veil';await tween(veil,{opacity:1},700,'ease-in');now.remove();
+    if(!next)preload(true);const lt=setTimeout(()=>veil.classList.add('wait'),1500);await loaded(next);clearTimeout(lt);veil.classList.remove('wait');await wait(700);show(next);await wait(250);await tween(veil,{opacity:0},900,'ease-out')}
+  else{const a=now;await (FX[fx]||FX.black)(a,next);a.remove()}
+  now=next;cur++;preload();warm(cur);markScene();try{history.replaceState(null,'','?s='+cur)}catch(e){}busy=false}
+// 最后一幕演完了：黑下去，回到片头再来一遍
+async function replay(){if(busy)return;busy=true;veil.className='veil';await tween(veil,{opacity:1},900,'ease-in');
+  if(now)now.remove();if(next)next.remove();location.href=location.pathname}
+// ---- 音乐：一首接一首，放完从头 ----
+let mi=0,VOL=.7;try{const v=localStorage.getItem('aroll.vol');if(v!==null)VOL=+v}catch(e){}
+let ducked=false;
+const np=document.getElementById('np'),npT=document.getElementById('npT');let muted=false,started=false;
+function syncTracks(){mT.textContent=MUSIC[mi].title;document.querySelectorAll('iframe').forEach(f=>{try{f.contentWindow.postMessage({roll:'tracks',list:MUSIC.map(t=>t.title),cur:mi},'*')}catch(e){}})}
+function setTrack(i){mi=i;music.src=MUSIC[mi].src;npT.textContent=MUSIC[mi].title;syncTracks()}
+function playMusic(){if(!MUSIC.length||started)return;started=true;setTrack(mi);music.volume=0;music.muted=muted;music.play().catch(()=>{});fade(VOL,2500);np.classList.add('on')}
+music.addEventListener('ended',()=>{setTrack((mi+1)%MUSIC.length);music.play().catch(()=>{})});
+// 苹果（iPhone、iPad、Mac 的 Safari）只在人刚点下去的那一刻肯开始出声。还没轮到放歌，就用这个播放器放一小段静音，苹果认下它，后面自己放、换歌都不用再点
+const SILENT=URL.createObjectURL(new Blob([(()=>{const n=400,b=new DataView(new ArrayBuffer(44+n*2)),w=(o,s)=>[...s].forEach((c,i)=>b.setUint8(o+i,c.charCodeAt(0)));
+  w(0,'RIFF');b.setUint32(4,36+n*2,true);w(8,'WAVEfmt ');b.setUint32(16,16,true);b.setUint16(20,1,true);b.setUint16(22,1,true);b.setUint16(24,8000,true);b.setUint16(28,16000,true);b.setUint16(32,2,true);b.setUint16(34,16,true);w(36,'data');b.setUint32(40,n*2,true);return b.buffer})()],{type:'audio/wav'}));
+let unlocked=false,stopped=false;
+let lastMove=performance.now(),lastT=-1;
+music.addEventListener('timeupdate',()=>{if(music.currentTime!==lastT){lastT=music.currentTime;lastMove=performance.now()}});
+music.addEventListener('playing',()=>{lastMove=performance.now()});
+window.unlockMusic=()=>{
+  if(started){if(hushed||stopped||fadeT0())return;
+    if(music.paused)music.play().catch(()=>{});
+    // 看着在放、三秒多时间没走：从停下的地方重新拿这首再放
+    else if(performance.now()-lastMove>3000){const t=music.currentTime;lastMove=performance.now();music.src=MUSIC[mi].src;
+      music.addEventListener('loadedmetadata',()=>{try{music.currentTime=t}catch(e){}},{once:true});music.play().catch(()=>{})}
+    return}
+  if(unlocked)return;unlocked=true;music.src=SILENT;const p=music.play();p&&p.then(()=>{if(!started)music.pause()}).catch(()=>{if(!started)unlocked=false})};
+['pointerup','touchend','click','keydown'].forEach(t=>addEventListener(t,()=>unlockMusic(),{capture:true,passive:true}));
+np.onclick=()=>{muted=!muted;music.muted=muted;np.classList.toggle('muted',muted)};
+// 设置栏：开关音乐；上一首/下一首
+const mOn=document.getElementById('mOn'),mT=document.getElementById('mT');mT.textContent=MUSIC[0]?MUSIC[0].title:'';
+function setMute(m){muted=m;music.muted=m;mOn.classList.toggle('off',m);mOn.textContent=m?'off':'on'}
+// 光圈点开/合上；点菜单外面合上
+const setEl=document.getElementById('set');document.getElementById('ap').onclick=e=>{e.stopPropagation();setEl.classList.toggle('open')};
+document.getElementById('menu').onclick=e=>e.stopPropagation();addEventListener('click',()=>setEl.classList.remove('open'));
+// 清晰度：存在浏览器里，下次打开还是这档；换了以后告诉每一幕
+const qOpt=document.getElementById('qOpt');
+function markQ(){let q='standard';try{q=localStorage.getItem('aroll.q')||q}catch(e){}qOpt.querySelectorAll('u').forEach(u=>u.classList.toggle('sel',u.dataset.q===q))}
+qOpt.querySelectorAll('u').forEach(u=>u.onclick=()=>{try{localStorage.setItem('aroll.q',u.dataset.q)}catch(e){}markQ();
+  document.querySelectorAll('iframe').forEach(f=>{try{f.contentWindow.postMessage({roll:'quality'},'*')}catch(e){}})});markQ();
+// 光影：simple = 关软阴影 + 关抗锯齿，电脑带不动的客人自己选；阴影当场变，抗锯齿下一幕装的时候才变
+const gOpt=document.getElementById('gOpt');
+function markG(){let g='full';try{g=localStorage.getItem('aroll.light')||g}catch(e){}gOpt.querySelectorAll('u').forEach(u=>u.classList.toggle('sel',u.dataset.g===g))}
+gOpt.querySelectorAll('u').forEach(u=>u.onclick=()=>{try{localStorage.setItem('aroll.light',u.dataset.g)}catch(e){}markG();
+  document.querySelectorAll('iframe').forEach(f=>{try{f.contentWindow.postMessage({roll:'quality'},'*')}catch(e){}})});markG();
+{const vol=document.getElementById('vol');const show=()=>{vol.value=Math.round(VOL*100);vol.style.setProperty('--v',vol.value+'%')};show();
+  vol.oninput=()=>{VOL=vol.value/100;vol.style.setProperty('--v',vol.value+'%');try{localStorage.setItem('aroll.vol',VOL)}catch(e){}
+    if(started&&!fadeT0()){music.volume=ducked?VOL*.3:VOL}}}
+mOn.onclick=()=>setMute(!muted);
+// 语言：存在浏览器里；换了就从这一幕重新装（每一幕装的时候才读语言）
+{const lOpt=document.getElementById('lOpt');lOpt.querySelectorAll('u').forEach(u=>{u.classList.toggle('sel',u.dataset.l===(window.ROLL_LANG||'en'));
+  u.onclick=()=>{if(u.dataset.l===(window.ROLL_LANG||'en'))return;try{localStorage.setItem('aroll.lang',u.dataset.l)}catch(e){}location.href=location.pathname+'?s='+cur}})}
+// 拍立得那行先留着（hidden）：等显影盘做好、喊 pola 的时候会亮
+document.getElementById('polaGo').onclick=()=>{setEl.classList.remove('open');if(window.POLA)POLA.open()};
+// 音效音量：只存下来，各幕自己从 roll-link.js 那边跟着变（storage 事件）
+{const sfx=document.getElementById('sfx');let v=1;try{const s=localStorage.getItem('aroll.sfx');if(s!==null)v=+s}catch(e){}
+  sfx.value=Math.round(v*100);sfx.style.setProperty('--v',sfx.value+'%');
+  sfx.oninput=()=>{sfx.style.setProperty('--v',sfx.value+'%');try{localStorage.setItem('aroll.sfx',sfx.value/100)}catch(e){}}}
+function skip(n){if(!MUSIC.length)return;pickTrack((mi+n+MUSIC.length)%MUSIC.length)}
+// 选一首：已经在放就马上换；主持人还没说完就先记着，开始放的时候从这首开始
+function pickTrack(i){if(started){setTrack(i);music.play().catch(()=>{})}else{mi=i;syncTracks()}}
+document.getElementById('mPrev').onclick=()=>skip(-1);document.getElementById('mNext').onclick=()=>skip(1);
+music.addEventListener('play',()=>{mT.textContent=MUSIC[mi].title});
+let fadeT,fading=false,hushed=false;const fadeT0=()=>fading;function fade(to,ms){clearInterval(fadeT);fading=true;const from=music.volume,t0=performance.now();fadeT=setInterval(()=>{const u=Math.min(1,(performance.now()-t0)/ms);music.volume=from+(to-from)*u;if(u>=1){clearInterval(fadeT);fading=false;if(to===0)music.pause()}},40)}
+addEventListener('message',e=>{const d=e.data;if(!d||!d.roll)return;
+  // 只听正在演的这一幕喊的消息；后台预加载的、已经演完的幕喊了不算，免得一下跳到片尾
+  const fromNow=now&&(e.source===now.contentWindow||(e.source&&e.source.parent===now.contentWindow));
+  if(d.roll==='prep'){if(fromNow&&!next)preload(true)}
+  else if(d.roll==='pola'){const pr=document.querySelector('#set .row[hidden]');if(pr)pr.hidden=false}
+  else if(d.roll==='ready'){document.querySelectorAll('iframe').forEach(f=>{if(e.source===f.contentWindow&&f.sayReady)f.sayReady()})}
+  else if(d.roll==='done'){console.log('[roll] done',d.fx,'from',fromNow?SCENES[cur]:'(not current, ignored)');
+    if(fromNow){if(cur+1>=SCENES.length)replay();else advance(d.fx)}}
+  else if(d.roll==='music'){if(d.cmd==='list')syncTracks();else if(String(d.cmd).startsWith('track:'))pickTrack(+d.cmd.slice(6));else if(d.cmd==='play')playMusic();else if(d.cmd==='kick'){if(cur>1&&cur<SCENES.length-1)playMusic()}else if(d.cmd==='duck'){ducked=true;fade(VOL*.3,800)}else if(d.cmd==='unduck'){ducked=false;fade(VOL,1200)}else if(d.cmd==='stop'){stopped=true;fade(0,2500);np.classList.remove('on')}
+    else if(d.cmd==='hush'){if(started&&!music.paused){hushed=true;fade(0,800)}}else if(d.cmd==='unhush'){if(hushed){hushed=false;music.play().catch(()=>{});fade(ducked?VOL*.3:VOL,1500)}}}
+  else if(d.roll==='restart'){location.href=location.pathname}});
+// ---- 场景切换：设置里可以一步一幕地来回走，不用把整卷从头再看一遍 ----
+const SNAME={'opening.html':'the projector','frame-c.html':'the darkroom','frame-e.html':'the envelope','rolls.html':'four rolls'};
+const sceneName=i=>SNAME[String(SCENES[i]||'').split('?')[0]]||('scene '+(i+1));
+const sT=document.getElementById('sT'),sPrev=document.getElementById('sPrev'),sNext=document.getElementById('sNext');
+function markScene(i){if(i==null)i=cur;sT.textContent=sceneName(i);sPrev.classList.toggle('dis',i<=0);sNext.classList.toggle('dis',i>=SCENES.length-1)}
+// 跳过去：先黑一下，把这一幕当成刚装上那样重演一遍（跳回去的也是新的），装好了再亮
+async function goTo(i){
+  i=Math.max(0,Math.min(SCENES.length-1,i));
+  if(busy||i===cur)return;busy=true;
+  if(next){next.remove();next=null}
+  veil.className='veil';
+  await tween(veil,{opacity:1},420,'ease-in');
+  if(now){now.remove();now=null}
+  const f=load(i),lt=setTimeout(()=>veil.classList.add('wait'),1200);
+  await loaded(f);clearTimeout(lt);veil.classList.remove('wait');
+  now=f;cur=i;show(f);markScene();
+  // 地址栏跟着走，刷新回来还停在这一幕
+  try{history.replaceState(null,'','?s='+cur)}catch(e){}
+  // 从主持人那幕跳走的时候音乐可能还压着，放回来
+  if(started&&!stopped&&!music.paused){ducked=false;fade(VOL,900)}
+  await wait(220);await tween(veil,{opacity:0},760,'ease-out');
+  preload();warm(cur);busy=false;
+}
+sPrev.onclick=e=>{e.stopPropagation();goTo(cur-1)};
+sNext.onclick=e=>{e.stopPropagation();goTo(cur+1)};
+// 菜单开着的时候 ← → 也能一幕幕走，Esc 合上
+addEventListener('keydown',e=>{if(!setEl.classList.contains('open'))return;
+  if(e.key==='ArrowLeft'){e.preventDefault();goTo(cur-1)}
+  else if(e.key==='ArrowRight'){e.preventDefault();goTo(cur+1)}
+  else if(e.key==='Escape')setEl.classList.remove('open')});
+markScene();
+boot();
+</script>
+</body></html>
